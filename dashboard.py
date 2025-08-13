@@ -50,7 +50,7 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if username == "sumnor_the_lazy" and password == "Sumnor_INTRA|2025|06|12":
             st.session_state.logged_in = True
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("❌ Invalid username or password")
 
@@ -75,7 +75,7 @@ else:
     if st.button("Add Log"):
         add_log(giver, receiver, resource, amount)
         st.success("✅ Transaction added!")
-        st.experimental_rerun()
+        st.rerun()
 
     # Breakdown Button
     if st.button("📊 Show Breakdown"):
@@ -112,4 +112,4 @@ else:
     # Logout
     if st.button("Logout"):
         st.session_state.logged_in = False
-        st.experimental_rerun()
+        st.rerun()
