@@ -72,8 +72,9 @@ else:
     st.subheader("➕ Add New Transaction(s)")
     giver = st.text_input("Giver")
     receiver = st.text_input("Receiver")
-    resources_input = st.text_input("Resources (comma-separated)", placeholder="Money, Steel, Uranium")
+    resources_input = st.text_input("Resources (comma-separated)", placeholder="Money, Steel")
     amount_text = st.text_input("Amount for each resource", placeholder="e.g. 50000000.00")
+    note = st.text_area("Note (e.g. Deposit, Loan Repayment)")
     
     if st.button("Add Log(s)"):
         try:
@@ -100,6 +101,7 @@ else:
                 st.rerun()
         except ValueError:
             st.error("❌ Enter a valid number for amount.")
+
 
     # Breakdown Button
     if st.button("📊 Show Breakdown"):
