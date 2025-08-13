@@ -10,13 +10,15 @@ DB_FILE = "pnw_logs.db"
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS logs (
+    c.execute('''DROP TABLE IF EXISTS logs''')  # only if you want to reset
+    c.execute('''CREATE TABLE logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         giver TEXT,
         receiver TEXT,
         resource TEXT,
         amount REAL,
-        date TEXT
+        date TEXT,
+        note TEXT
     )''')
     conn.commit()
     conn.close()
@@ -70,36 +72,34 @@ else:
     st.subheader("➕ Add New Transaction(s)")
     giver = st.text_input("Giver")
     receiver = st.text_input("Receiver")
-    resource = st.selectbox("Resource", ["Money", "Food", "Oil", "Uranium", "Steel", "Aluminum", "Gasoline", "Munitions"])
-    amount_text = st.text_input("Amount", placeholder="e.g. 50,000,000.00")
-    note = st.text_area("Note (e.g. Deposit, Loan Repayment)")
+    resources_input = st.text_input("Resources (comma-separated)", placeholder="Money, Steel, Uranium")
+    amount_text = st.text_input("Amount for each resource", placeholder="e.g. 50000000.00")
     
     if st.button("Add Log(s)"):
         try:
-            # Remove commas and convert to float
             amount = float(amount_text.replace(",", "").strip())
-    
-            # If multiple logs are entered in Giver or Receiver fields (comma-separated)
+            resources = [r.strip() for r in resources_input.split(",") if r.strip()]
             givers = [g.strip() for g in giver.split(",") if g.strip()]
             receivers = [r.strip() for r in receiver.split(",") if r.strip()]
     
-            if not givers or not receivers:
-                st.error("⚠ Please enter at least one giver and one receiver.")
+            if not givers or not receivers or not resources:
+                st.error("⚠ Enter at least one giver, one receiver, and one resource.")
             else:
+                conn = sqlite3.connect(DB_FILE)
+                c = conn.cursor()
                 for g in givers:
                     for r in receivers:
-                        conn = sqlite3.connect(DB_FILE)
-                        c = conn.cursor()
-                        c.execute(
-                            "INSERT INTO logs (giver, receiver, resource, amount, date, note) VALUES (?, ?, ?, ?, ?, ?)",
-                            (g, r, resource, amount, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), note)
-                        )
-                        conn.commit()
-                        conn.close()
+                        for res in resources:
+                            c.execute(
+                                "INSERT INTO logs (giver, receiver, resource, amount, date, note) VALUES (?, ?, ?, ?, ?, ?)",
+                                (g, r, res, amount, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), note)
+                            )
+                conn.commit()
+                conn.close()
                 st.success("✅ Transaction(s) added!")
                 st.rerun()
         except ValueError:
-            st.error("❌ Please enter a valid amount (numbers only).")
+            st.error("❌ Enter a valid number for amount.")
 
     # Breakdown Button
     if st.button("📊 Show Breakdown"):
