@@ -67,15 +67,39 @@ else:
         st.dataframe(logs_df)
 
     # Add logs
-    st.subheader("➕ Add New Transaction")
+    st.subheader("➕ Add New Transaction(s)")
     giver = st.text_input("Giver")
     receiver = st.text_input("Receiver")
     resource = st.selectbox("Resource", ["Money", "Food", "Oil", "Uranium", "Steel", "Aluminum", "Gasoline", "Munitions"])
-    amount = st.number_input("Amount", min_value=0.0, step=0.1)
-    if st.button("Add Log"):
-        add_log(giver, receiver, resource, amount)
-        st.success("✅ Transaction added!")
-        st.rerun()
+    amount_text = st.text_input("Amount", placeholder="e.g. 50,000,000.00")
+    note = st.text_area("Note (e.g. Deposit, Loan Repayment)")
+    
+    if st.button("Add Log(s)"):
+        try:
+            # Remove commas and convert to float
+            amount = float(amount_text.replace(",", "").strip())
+    
+            # If multiple logs are entered in Giver or Receiver fields (comma-separated)
+            givers = [g.strip() for g in giver.split(",") if g.strip()]
+            receivers = [r.strip() for r in receiver.split(",") if r.strip()]
+    
+            if not givers or not receivers:
+                st.error("⚠ Please enter at least one giver and one receiver.")
+            else:
+                for g in givers:
+                    for r in receivers:
+                        conn = sqlite3.connect(DB_FILE)
+                        c = conn.cursor()
+                        c.execute(
+                            "INSERT INTO logs (giver, receiver, resource, amount, date, note) VALUES (?, ?, ?, ?, ?, ?)",
+                            (g, r, resource, amount, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), note)
+                        )
+                        conn.commit()
+                        conn.close()
+                st.success("✅ Transaction(s) added!")
+                st.rerun()
+        except ValueError:
+            st.error("❌ Please enter a valid amount (numbers only).")
 
     # Breakdown Button
     if st.button("📊 Show Breakdown"):
