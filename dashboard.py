@@ -40,22 +40,23 @@ init_db()
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
-if "is_admin" not in st.session_state:
-    st.session_state.is_admin = False
 
 # Login
 if not st.session_state.logged_in:
     st.title("🏛 Politics & War Transaction Tracker")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
+
     if st.button("Login"):
-        st.session_state.logged_in = True
-        if username.lower() == "youradminname" and password == "yourpassword":  # Change these
-            st.session_state.is_admin = True
-        st.experimental_rerun()
+        if username == "sumnor_the_lazy" and password == "Sumnor_INTRA|2025|06|12":
+            st.session_state.logged_in = True
+            st.experimental_rerun()
+        else:
+            st.error("❌ Invalid username or password")
 
 else:
     st.title("🏛 Politics & War Transaction Tracker")
+    st.write("Logged in as **sumnor_the_lazy**")
 
     # View logs
     st.header("📜 Transaction Logs")
@@ -65,17 +66,16 @@ else:
     else:
         st.dataframe(logs_df)
 
-    # Add logs (Admin only)
-    if st.session_state.is_admin:
-        st.subheader("➕ Add New Transaction")
-        giver = st.text_input("Giver")
-        receiver = st.text_input("Receiver")
-        resource = st.selectbox("Resource", ["Money", "Food", "Oil", "Uranium", "Steel", "Aluminum", "Gasoline", "Munitions"])
-        amount = st.number_input("Amount", min_value=0.0, step=0.1)
-        if st.button("Add Log"):
-            add_log(giver, receiver, resource, amount)
-            st.success("✅ Transaction added!")
-            st.experimental_rerun()
+    # Add logs
+    st.subheader("➕ Add New Transaction")
+    giver = st.text_input("Giver")
+    receiver = st.text_input("Receiver")
+    resource = st.selectbox("Resource", ["Money", "Food", "Oil", "Uranium", "Steel", "Aluminum", "Gasoline", "Munitions"])
+    amount = st.number_input("Amount", min_value=0.0, step=0.1)
+    if st.button("Add Log"):
+        add_log(giver, receiver, resource, amount)
+        st.success("✅ Transaction added!")
+        st.experimental_rerun()
 
     # Breakdown Button
     if st.button("📊 Show Breakdown"):
@@ -112,5 +112,4 @@ else:
     # Logout
     if st.button("Logout"):
         st.session_state.logged_in = False
-        st.session_state.is_admin = False
         st.experimental_rerun()
